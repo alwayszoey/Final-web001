@@ -58,6 +58,19 @@ export const PRESET_THEME_COLORS = [
   { name: "แดงเพลิง (Red)", hex: "#ef4444" },
 ];
 
+export const safeString = (val: any): string => {
+  if (val === null || val === undefined) return "";
+  if (typeof val === "string") return val;
+  if (typeof val === "object") {
+    if (typeof val.th === "string" && val.th.trim()) return val.th;
+    if (typeof val.en === "string" && val.en.trim()) return val.en;
+    const first = Object.values(val)[0];
+    if (typeof first === "string") return first;
+    return "";
+  }
+  return String(val);
+};
+
 export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   isOpen,
   onClose,
@@ -357,28 +370,31 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
   const handleOpenEditProduct = (item: any) => {
     setEditingProduct(item);
     setFormData({
-      itemId: item.itemId || item.id,
-      title: item.title || "",
-      category: item.category || "Script",
-      price: item.price !== undefined ? String(item.price) : "0",
+      itemId: safeString(item.itemId || item.id),
+      title: safeString(item.title),
+      category: safeString(item.category) || "Script",
+      price: item.price !== undefined ? safeString(item.price) : "0",
       actionType: item.actionType === "purchase" ? "purchase" : "link",
-      shortDescription: item.shortDescription || "",
-      fullDescription: item.fullDescription || "",
-      imageUrl: item.imageUrl || "",
-      videoUrl: item.videoUrl || "",
-      link: item.link || "",
-      purchaseDetails: item.purchaseDetails || "",
-      warning: item.warning || "",
-      tags: Array.isArray(item.tags) ? item.tags.join(", ") : item.tags || "",
-      fileSize: item.fileSize || "",
+      shortDescription: safeString(item.shortDescription),
+      fullDescription: safeString(item.fullDescription),
+      imageUrl: safeString(item.imageUrl),
+      videoUrl: safeString(item.videoUrl),
+      link: safeString(item.link),
+      purchaseDetails: safeString(item.purchaseDetails),
+      warning: safeString(item.warning),
+      tags: Array.isArray(item.tags) ? item.tags.map(safeString).join(", ") : safeString(item.tags),
+      fileSize: safeString(item.fileSize),
       isPopular: Boolean(item.isPopular),
       isFeatured: Boolean(item.isFeatured),
       isOutOfStock: Boolean(item.isOutOfStock),
       requiresLogin: Boolean(item.requiresLogin),
       downloadLinks:
-        item.downloadLinks && item.downloadLinks.length > 0
-          ? item.downloadLinks
-          : [{ label: "ดาวน์โหลดหลัก", url: item.link || "" }],
+        Array.isArray(item.downloadLinks) && item.downloadLinks.length > 0
+          ? item.downloadLinks.map((dl: any) => ({
+              label: safeString(dl.label) || "ดาวน์โหลด",
+              url: safeString(dl.url),
+            }))
+          : [{ label: "ดาวน์โหลดหลัก", url: safeString(item.link) }],
     });
     setIsProductModalOpen(true);
   };
@@ -430,7 +446,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
   // Delete Product
   const handleDeleteProduct = async (itemId: string, title: string) => {
-    if (!window.confirm(`ยืนยันการลบสินค้า "${title}" หรือไม่?`)) return;
+    const titleStr = safeString(title) || "สินค้านี้";
+    if (!window.confirm(`ยืนยันการลบสินค้า "${titleStr}" หรือไม่?`)) return;
 
     try {
       const res = await fetch(`/api/admin/resources/${itemId}`, {
@@ -499,21 +516,30 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Filter products
+  // Filter products safely
   const filteredProducts = adminResources.filter((item) => {
+    if (!item) return false;
+    const title = safeString(item.title).toLowerCase();
+    const itemId = safeString(item.itemId || item.id).toLowerCase();
+    const category = safeString(item.category).toLowerCase();
+    const shortDesc = safeString(item.shortDescription).toLowerCase();
+    const q = (searchProduct || "").toLowerCase().trim();
+
     const matchesSearch =
-      item.title?.toLowerCase().includes(searchProduct.toLowerCase()) ||
-      item.itemId?.toLowerCase().includes(searchProduct.toLowerCase()) ||
-      item.category?.toLowerCase().includes(searchProduct.toLowerCase());
-    const matchesCat = selectedCategory === "all" || item.category === selectedCategory;
+      !q ||
+      title.includes(q) ||
+      itemId.includes(q) ||
+      category.includes(q) ||
+      shortDesc.includes(q);
+    const matchesCat = selectedCategory === "all" || safeString(item.category) === selectedCategory;
     return matchesSearch && matchesCat;
   });
 
   // Filter users
   const filteredUsers = usersList.filter(
     (u) =>
-      u.username?.toLowerCase().includes(searchUser.toLowerCase()) ||
-      u.email?.toLowerCase().includes(searchUser.toLowerCase())
+      safeString(u?.username).toLowerCase().includes(searchUser.toLowerCase().trim()) ||
+      safeString(u?.email).toLowerCase().includes(searchUser.toLowerCase().trim())
   );
 
   return (
@@ -939,8 +965,8 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                           <div className="relative aspect-video rounded-xl overflow-hidden bg-slate-950 mb-3 border border-slate-700/50">
                             {item.imageUrl ? (
                               <img
-                                src={item.imageUrl}
-                                alt={item.title}
+                                src={safeString(item.imageUrl)}
+                                alt={safeString(item.title)}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                 onError={(e) => {
                                   (e.target as any).src = "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80";
@@ -954,12 +980,12 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
 
                             {/* Category Badge */}
                             <div className="absolute top-2 left-2 px-2.5 py-1 rounded-lg bg-black/75 backdrop-blur-md text-[10px] font-bold text-white uppercase tracking-wider border border-white/10">
-                              {item.category || "Script"}
+                              {safeString(item.category) || "Script"}
                             </div>
 
                             {/* Price Tag */}
                             <div className="absolute top-2 right-2 px-2.5 py-1 rounded-lg bg-blue-600 text-[11px] font-bold text-white shadow-md">
-                              {item.price === "0" || item.price === "ฟรี" ? "แจกฟรี" : `฿${item.price}`}
+                              {safeString(item.price) === "0" || safeString(item.price) === "ฟรี" ? "แจกฟรี" : `฿${safeString(item.price)}`}
                             </div>
 
                             {/* Flags */}
@@ -983,9 +1009,9 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                           </div>
 
                           {/* Content */}
-                          <h4 className="text-sm font-bold text-white mb-1 line-clamp-1">{item.title}</h4>
+                          <h4 className="text-sm font-bold text-white mb-1 line-clamp-1">{safeString(item.title)}</h4>
                           <p className="text-xs text-slate-400 line-clamp-2 mb-3">
-                            {item.shortDescription || item.fullDescription || "ไม่มีคำอธิบาย"}
+                            {safeString(item.shortDescription) || safeString(item.fullDescription) || "ไม่มีคำอธิบาย"}
                           </p>
 
                           {/* Action Type & Links count */}
@@ -1002,7 +1028,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                         {/* Actions */}
                         <div className="flex items-center justify-between pt-3 border-t border-slate-700/60 mt-2">
                           <span className="text-[10px] font-mono text-slate-500 truncate max-w-[120px]">
-                            ID: {item.itemId || item.id}
+                            ID: {safeString(item.itemId || item.id)}
                           </span>
                           <div className="flex items-center gap-1.5">
                             <button
@@ -1013,7 +1039,7 @@ export const AdminDashboardModal: React.FC<AdminDashboardModalProps> = ({
                               <span>แก้ไข</span>
                             </button>
                             <button
-                              onClick={() => handleDeleteProduct(item.itemId || item.id, item.title)}
+                              onClick={() => handleDeleteProduct(item.itemId || item.id, safeString(item.title))}
                               className="p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 border border-rose-500/20 transition-all"
                               title="ลบสินค้า"
                             >

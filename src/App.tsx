@@ -19,10 +19,11 @@ import { siteConfig } from './config';
 import { AuthModal } from './AuthModal';
 import { ProfileModal } from './ProfileModal';
 import { AdminDashboardModal } from './components/AdminDashboardModal';
+import { AdminPortalPage } from './pages/AdminPortalPage';
 
 const EMOTICONS = ['🇹🇭', '🇻🇳', '🎮', '🚀', '✨', '🎁', '🔥', '💖', '👋'];
 
-type ViewState = 'home' | 'details' | 'help' | 'category' | 'history';
+type ViewState = 'home' | 'details' | 'help' | 'category' | 'history' | 'admin';
 type AppLang = 'vi' | 'th';
 
 const StatsCard = ({ icon: Icon, title, value, unit }: { icon: any, title: string, value: string | number, unit: string }) => (
@@ -323,9 +324,12 @@ useEffect(() => {
   };
 
   const getLocalized = (val: any): string => {
-    if (!val) return '';
+    if (val === null || val === undefined) return '';
     if (typeof val === 'string') return val;
-    return val['th'] || val['vi'] || '';
+    if (typeof val === 'object') {
+      return val['th'] || val['vi'] || val['en'] || Object.values(val)[0] || '';
+    }
+    return String(val);
   };
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -416,7 +420,29 @@ useEffect(() => {
     else if (path === '/help') _setCurrentView('help');
     else if (path === '/about') _setCurrentView('about');
     else if (path === '/contact') _setCurrentView('contact');
+    else if (
+      path === '/portal-gateway-x99' ||
+      path === '/sys-console-gate-x98' ||
+      path === '/_gateway_root_zorix99' ||
+      path === '/admin-portal' ||
+      path === '/admin' ||
+      path === '/dashboard'
+    ) {
+      _setCurrentView('admin');
+    }
   }, [location.pathname, dynamicResources]);
+
+  // Global secret shortcut for Master Admin: Ctrl + Shift + A
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        navigate('/portal-gateway-x99');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [navigate]);
 
   const currentView = _currentView;
   const setCurrentView = (view: ViewState | 'about' | 'contact', params?: { id?: string | number }) => {
@@ -427,6 +453,7 @@ useEffect(() => {
     else if (view === 'help') navigate('/help');
     else if (view === 'about') navigate('/about');
     else if (view === 'contact') navigate('/contact');
+    else if (view === 'admin') navigate('/portal-gateway-x99');
   };
 
   const [activeLinkId, setActiveLinkId] = useState<number | null>(null);
@@ -995,6 +1022,23 @@ ${h.details || '-'}
   }
 
   // ============================================================================
+  // 📌 RENDER DEDICATED ADMIN PORTAL (ZERO-TRUST STEALTH GATEWAY)
+  // ============================================================================
+  if (currentView === 'admin') {
+    return (
+      <AdminPortalPage
+        currentUser={currentUser}
+        siteSettings={siteSettings}
+        onUpdateSiteSettings={(newSettings) => {
+          setSiteSettings(newSettings);
+          fetchPublicCatalogAndSettings();
+        }}
+        onRefreshResources={fetchPublicCatalogAndSettings}
+      />
+    );
+  }
+
+  // ============================================================================
   // 📌 RENDER - โครงสร้าง HTML ทั้งหมดของเว็บ
   // ============================================================================
   return (
@@ -1054,7 +1098,7 @@ ${h.details || '-'}
           {/* Master Admin Panel Quick Button */}
           {isMasterAdmin(currentUser) && (
             <button 
-              onClick={() => setShowAdminDashboard(true)}
+              onClick={() => navigate('/portal-gateway-x99')}
               className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[14px] bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-blue-500/25 transition-all border border-blue-400/30 active:scale-95"
               title="เปิดแผงควบคุมระบบแอดมิน (Authorized: cpjustink@gmail.com)"
             >
@@ -1116,7 +1160,7 @@ ${h.details || '-'}
               {/* Master Admin Button inside Mobile Menu */}
               {isMasterAdmin(currentUser) && (
                 <button 
-                  onClick={() => { setIsMobileMenuOpen(false); setShowAdminDashboard(true); }}
+                  onClick={() => { setIsMobileMenuOpen(false); navigate('/portal-gateway-x99'); }}
                   className="flex items-center gap-3 p-3.5 rounded-[16px] bg-gradient-to-r from-blue-600/15 to-indigo-600/15 border border-blue-500/30 text-left font-bold text-blue-500 hover:text-blue-400 hover:bg-blue-500/25 transition-all w-full group mb-1 shadow-sm"
                 >
                   <ShieldCheck className="w-5 h-5 text-blue-500 group-hover:scale-110 transition-transform" />
@@ -1480,7 +1524,7 @@ ${h.details || '-'}
                       </p>
                       {isMasterAdmin(currentUser) && (
                         <button
-                          onClick={() => setShowAdminDashboard(true)}
+                          onClick={() => navigate('/portal-gateway-x99')}
                           className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-blue-500/20 flex items-center gap-2"
                         >
                           <Plus size={16} />
@@ -1762,7 +1806,8 @@ ${h.details || '-'}
                 <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5 pb-12">
                   <AnimatePresence mode="popLayout">
                     {filteredResources.map((item, index) => {
-                       const pseudoSold = (item.title as any)?.th?.length * 15 + index * 7 + 10;
+                       const titleStr = getLocalized(item.title);
+                       const pseudoSold = (titleStr ? titleStr.length : 6) * 15 + index * 7 + 10;
                        return (
                         <motion.div 
                           layout
