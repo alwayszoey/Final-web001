@@ -1,0 +1,164 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  /* ==========================================================
+   🎨 คู่มือการเปลี่ยนสี่เว็บไซต์ (สำหรับเจ้าของร้าน/แอดมิน) 🎨
+   ========================================================== 
+   เปลี่ยนสีหลักของระบบได้ที่นี่ เฉพาะคุณเท่านั้นที่เห็น (หลังบ้าน/โค้ด)
+   วิธีแก้: เปลี่ยนโค้ด HEX ด้านล่าง (เช่น #1e293b)
+  */
+  --theme-brand: #3b82f6;         /* สีหลักของแบรนด์ (ปุ่มหลัก, โลโก้, สีเน้น) */
+  --theme-brand-hover: #2563eb;   /* สีปุ่มหลักเมื่อเอาเมาส์ชี้ */
+  --theme-brand-light: #eff6ff;   /* สีพื้นหลังแบบอ่อน (ใช้ในปุ่มรอง, องค์ประกอบเน้นข้อความ) */
+  
+  --theme-bg-app: #ffffff;        /* สีพื้นหลังของทั้งเว็บ */
+  --theme-card-bg: #ffffff;       /* สีพื้นหลังของการ์ดและหน้าต่าง (Modal) */
+  --theme-border: #f1f5f9;        /* สีขอบ (Border) */
+  --theme-text-main: #1e293b;     /* สีตัวหนังสือเนื้อหาหลัก */
+  --theme-text-muted: #64748b;    /* สีตัวหนังสือรอง (สีเทา) */
+}
+
+.dark {
+  --theme-brand: #3b82f6;
+  --theme-brand-hover: #2563eb;
+  --theme-brand-light: rgba(59, 130, 246, 0.15);
+  
+  --theme-bg-app: #000000;
+  --theme-card-bg: #000000;
+  --theme-border: #222222;
+  --theme-text-main: #ffffff;
+  --theme-text-muted: #d4d4d8; /* Light gray text */
+
+  /* Override hardcoded Tailwind color variables for strict pitch-black dark mode */
+  --color-white: #000000;
+  --color-slate-50: #000000;
+  --color-slate-100: #000000;
+  --color-slate-200: #222222;
+  --color-slate-300: #333333;
+  --color-slate-400: #a1a1aa;
+  --color-slate-500: #d4d4d8;
+  --color-slate-600: #e4e4e7;
+  --color-slate-700: #f4f4f5;
+  --color-slate-800: #ffffff;
+  --color-slate-900: #ffffff;
+  
+  /* Tint Background Overrides for dark mode */
+  --color-red-50: rgba(239, 68, 68, 0.1);
+  --color-red-100: rgba(239, 68, 68, 0.2);
+  --color-red-200: rgba(239, 68, 68, 0.3);
+  --color-red-600: #f87171;
+  --color-red-700: #fca5a5;
+  
+  --color-emerald-50: rgba(16, 185, 129, 0.1);
+  --color-emerald-100: rgba(16, 185, 129, 0.2);
+  --color-emerald-200: rgba(16, 185, 129, 0.3);
+  --color-emerald-600: #34d399;
+  --color-emerald-700: #6ee7b7;
+
+  --color-blue-50: rgba(59, 130, 246, 0.1);
+  --color-blue-100: rgba(59, 130, 246, 0.2);
+  
+  --color-rose-50: rgba(244, 63, 94, 0.1);
+  --color-rose-100: rgba(244, 63, 94, 0.2);
+  
+  --color-amber-50: rgba(245, 158, 11, 0.1);
+  --color-amber-100: rgba(245, 158, 11, 0.2);
+}
+
+@theme {
+  --font-sans: "IBM Plex Sans Thai", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  --color-brand: var(--theme-brand);
+  --color-brand-hover: var(--theme-brand-hover);
+  --color-brand-light: var(--theme-brand-light);
+  --color-bg-app: var(--theme-bg-app);
+  --color-card-bg: var(--theme-card-bg);
+  --color-border-subtle: var(--theme-border);
+  --color-text-main: var(--theme-text-main);
+  --color-text-muted: var(--theme-text-muted);
+  --color-danger: #ef4444;
+  --color-danger-light: #fef2f2;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  background-color: var(--color-bg-app);
+  color: var(--color-text-main);
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+  overflow-x: hidden;
+}
+
+/* Hide scrollbar for category tabs */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Shiny Sweep Animation Effect */
+@keyframes slide-diagonal {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 200px 200px;
+  }
+}
+
+@keyframes shine {
+  0% {
+    transform: translateX(-200%) skewX(-25deg);
+  }
+  35% {
+    transform: translateX(800%) skewX(-25deg);
+  }
+  100% {
+    transform: translateX(800%) skewX(-25deg);
+  }
+}
+
+.shiny-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shiny-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 15%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-200%) skewX(-25deg);
+  animation: shine 6s infinite ease-in-out;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Announcement Banner Animation CSS */
+@keyframes annScroll {
+  0% {
+    transform: translateX(100vw);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+.animate-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: annScroll 25s linear infinite;
+  will-change: transform;
+}

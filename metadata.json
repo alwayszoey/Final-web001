@@ -1,0 +1,6 @@
+{
+  "name": "Zorix Shop",
+  "description": "ศูนย์รวมทรัพยากร ม็อด สคริปต์ และแพ็กเกจสำหรับเกม พร้อมระบบสมาชิก ดาวน์โหลดความปลอดภัย และสถิติเรียลไทม์",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
